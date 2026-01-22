@@ -11,10 +11,17 @@ app.Use(async (HttpContext context, RequestDelegate next) =>
     await context.Response.WriteAsync("Middleware #1: After calling next\n\r");
 });
 
-app.MapWhen((context) =>
+app.UseWhen((context) =>
 {
-    return context.Request.Path.StartsWithSegments("/employees") && context.Request.Query.ContainsKey("id");
+    return context.Request.Path.StartsWithSegments("/employees") &&
+            context.Request.Query.ContainsKey("id");
 },
+
+
+//app.MapWhen((context) =>
+//{
+//    return context.Request.Path.StartsWithSegments("/employees") && context.Request.Query.ContainsKey("id");
+//},
 (appBuilder) =>
 {
     //Branch Middleware #5
@@ -71,4 +78,5 @@ app.Run();
  * app.Run is used to create terminal middleware.
  * app.Map to create branching middleware.
  * app.MapWhen to create conditional branching middleware.
+ * app.UseWhen to create a regional branch of middleware based on a condition.
  */
