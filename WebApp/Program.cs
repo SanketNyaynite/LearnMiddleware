@@ -1,4 +1,10 @@
+using WebApp.MiddleComponents;
+
 var builder = WebApplication.CreateBuilder(args);
+
+//Registering custom middleware as a service
+builder.Services.AddTransient<MyCustomMiddleware>(); 
+
 var app = builder.Build();
 
 //Middleware #1
@@ -11,34 +17,37 @@ app.Use(async (HttpContext context, RequestDelegate next) =>
     await context.Response.WriteAsync("Middleware #1: After calling next\n\r");
 });
 
-app.UseWhen((context) =>
-{
-    return context.Request.Path.StartsWithSegments("/employees") &&
-            context.Request.Query.ContainsKey("id");
-},
 
+app.UseMiddleware<MyCustomMiddleware>();
 
-//app.MapWhen((context) =>
+//app.UseWhen((context) =>
 //{
-//    return context.Request.Path.StartsWithSegments("/employees") && context.Request.Query.ContainsKey("id");
+//    return context.Request.Path.StartsWithSegments("/employees") &&
+//            context.Request.Query.ContainsKey("id");
 //},
-(appBuilder) =>
-{
-    //Branch Middleware #5
-    appBuilder.Use(async (HttpContext context, RequestDelegate next) =>
-    {
-        await context.Response.WriteAsync("Middleware #5: Before calling next\n\r");
-        await next(context);
-        await context.Response.WriteAsync("Middleware #5: After calling next\n\r");
-    });
 
-    appBuilder.Use(async (HttpContext context, RequestDelegate next) =>
-    {
-        await context.Response.WriteAsync("Middleware #6: Before calling next\n\r");
-        await next(context);
-        await context.Response.WriteAsync("Middleware #6: After calling next\n\r");
-    });
-});
+
+////app.MapWhen((context) =>
+////{
+////    return context.Request.Path.StartsWithSegments("/employees") && context.Request.Query.ContainsKey("id");
+////},
+//(appBuilder) =>
+//{
+//    //Branch Middleware #5
+//    appBuilder.Use(async (HttpContext context, RequestDelegate next) =>
+//    {
+//        await context.Response.WriteAsync("Middleware #5: Before calling next\n\r");
+//        await next(context);
+//        await context.Response.WriteAsync("Middleware #5: After calling next\n\r");
+//    });
+
+//    appBuilder.Use(async (HttpContext context, RequestDelegate next) =>
+//    {
+//        await context.Response.WriteAsync("Middleware #6: Before calling next\n\r");
+//        await next(context);
+//        await context.Response.WriteAsync("Middleware #6: After calling next\n\r");
+//    });
+//});
 
 //Middleware #2
 app.Use(async (HttpContext context, RequestDelegate next) =>
@@ -78,5 +87,7 @@ app.Run();
  * app.Run is used to create terminal middleware.
  * app.Map to create branching middleware.
  * app.MapWhen to create conditional branching middleware.
- * app.UseWhen to create a regional branch of middleware based on a condition.
+ * app.UseWhen to create a rejoinable branch of middleware based on a condition.
+ * Program.cs file is for configuring our Kestrel server, our web application and the middleware pipeline.
+ * Creating custom middleware class first create the class that implements the interface and second is register the class as a service.
  */
