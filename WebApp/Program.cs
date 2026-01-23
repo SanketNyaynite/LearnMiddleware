@@ -4,8 +4,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 //Registering custom middleware as a service
 builder.Services.AddTransient<MyCustomMiddleware>(); 
+builder.Services.AddTransient<MyCustomExceptionHandler>();
 
 var app = builder.Build();
+
+app.UseMiddleware<MyCustomExceptionHandler>();
+
 
 //Middleware #1
 app.Use(async (HttpContext context, RequestDelegate next) =>
@@ -52,6 +56,8 @@ app.UseMiddleware<MyCustomMiddleware>();
 //Middleware #2
 app.Use(async (HttpContext context, RequestDelegate next) =>
 {
+    throw new ApplicationException("Testing Something went wrong in Middleware #2");
+
     await context.Response.WriteAsync("Middleware #2: Before calling next\n\r");
 
     //if I comment below line, the control will not go to next middleware and will shortcircuit here.
@@ -76,6 +82,9 @@ app.Use(async (HttpContext context, RequestDelegate next) =>
 
     await context.Response.WriteAsync("Middleware #3: After calling next\n\r");
 });
+
+
+
 
 //Runs the Kestrel server and our webApp and then makes request to above middleware code
 app.Run();
